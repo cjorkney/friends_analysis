@@ -21,7 +21,7 @@ lines_by_character <- lines_clean %>%
   summarise(lines = n()) %>%
   ungroup() %>% 
   group_by(speaker) %>%
-  mutate(movav = roll_meanr(lines, 30)) %>%
+  mutate(movav = roll_meanr(lines, movav_eps)) %>%
   ungroup()
 ```
 

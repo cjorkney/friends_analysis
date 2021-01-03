@@ -15,10 +15,14 @@ library(ggplot2)
 library(RcppRoll)
 ```
 
+
 ``` {r setup, echo = FALSE, message = FALSE}
 # Set constants
+
 names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
                'Phoebe Buffay', 'Ross Geller', 'Rachel Green')
+
+movav_eps <- 30
 
 # Get data
 
@@ -51,7 +55,7 @@ lines_by_character <- lines_clean %>%
   summarise(lines = n()) %>%
   ungroup() %>% 
   group_by(speaker) %>%
-  mutate(movav = roll_meanr(lines, 30)) %>%
+  mutate(movav = roll_meanr(lines, movav_eps)) %>%
   ungroup()
 ```
 
@@ -62,8 +66,11 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
   geom_line() +
   labs(
     title = 'Number of lines per episode by main character',
-    subtitle = '30-episode moving averages',
+    subtitle = paste0(movav_eps, '-episode moving averages'),
     x = 'Episode number', y = 'Lines spoken per episode',
     colour = 'Character'
   )
 ```
+
+
+
