@@ -83,12 +83,13 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
 geom_point_movav_labels <- partial(geom_point,
                                    aes(x = ep_no, y = movav),
                                    shape = 21,
-                                   fill = 'black')
+                                   fill = 'black',
+                                   show.legend = FALSE)
 
 geom_text_movav_labels <- partial(geom_text,
                                   aes(x = ep_no, y = movav,
-                                      label = sprintf('%0.2f', round(movav, 1))),
-                                  colour = 'black',)
+                                      label = sprintf('%0.1f', round(movav, 1))),
+                                  colour = 'black')
 
 # Facet the above plot by character
 ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
