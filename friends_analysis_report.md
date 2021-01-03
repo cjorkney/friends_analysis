@@ -8,7 +8,7 @@ Callum Orkney
     ##  Downloading file 2 of 3: `friends_info.csv`
     ##  Downloading file 3 of 3: `friends_emotions.csv`
 
-## some title
+## Analysis of number of lines
 
 Summarising the data by episode and character, we can see how the number
 of lines per episode for each character has changed over time. To avoid
