@@ -50,6 +50,18 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
     colour = 'Character'
   )
 
+# Facet the above plot by character
+ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
+  geom_line(show.legend = FALSE, size = 1) +
+  geom_line(aes(y = lines), alpha = 0.4, show.legend = FALSE) +
+  facet_wrap(~ speaker) +
+  labs(
+    title = 'Number of lines per episode by main character',
+    subtitle = '30-episode moving averages',
+    x = 'Episode number', y = 'Lines spoken per episode',
+    colour = 'Character'
+  )
+
 # Density plot comparing characters' numbers of lines, faceted by season
 ggplot(lines_by_character, aes(x = lines, colour = speaker)) +
   geom_line(stat = "density") +
