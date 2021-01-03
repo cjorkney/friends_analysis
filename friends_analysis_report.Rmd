@@ -125,3 +125,14 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
 ```
 
 We can see more clearly now that the average number of lines spoken per episode was higher at the end of the show than at the start for all characters, and that Joey and Phoebe saw the most significant increases. Though all characters fluctuated over time (the time series for individual episodes have been added here with higher transparancy), these two had significantly fewer lines per episode in the first season than the other main characters. This may reflect Joey and Phoebe's early status as "light relief" characters that didn't drive the main plot points or romantic storylines - from my (possibly inaccurate) memory, those things were more the domain of Monica, Ross and Rachel in those days. I don't remember Chandler driving much of the early plot either, but I suppose his role as "the funny one" gave him a lot of lines.
+
+
+
+## Things to do:
+### Lines per character represented by distributions/boxplots
+### Can we predict ratings based on lines spoken by each character? (Linear/RF regression)
+### Break lines down into words (tidytext) and do some NLP - sentiment analysis / n-grams (popular 3/4-word phrases for each character?) / wordclouds / top words / topic modelling?
+
+
+
+

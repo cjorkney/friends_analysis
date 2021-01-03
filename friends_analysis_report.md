@@ -39,8 +39,8 @@ near the end of the show’s run than at its beginning. Note that, if we
 assume around 30 episodes per season, we can roughly take the starts of
 these lines as season 1 averages and the ends as season 10 averages.
 
-It’s a little hard to distinguish the series for each character, though
-- let’s create a faceted version of this plot so that we can see the
+It’s a little hard to distinguish the series for each character, though.
+Let’s create a faceted version of this plot so that we can see the
 changes for each character more clearly:
 
 ![](friends_analysis_report_files/figure-gfm/line-plot-facet-1.png)<!-- -->
@@ -57,3 +57,11 @@ points or romantic storylines - from my (possibly inaccurate) memory,
 those things were more the domain of Monica, Ross and Rachel in those
 days. I don’t remember Chandler driving much of the early plot either,
 but I suppose his role as “the funny one” gave him a lot of lines.
+
+## Things to do:
+
+### Lines per character represented by distributions/boxplots
+
+### Can we predict ratings based on lines spoken by each character? (Linear/RF regression)
+
+### Break lines down into words (tidytext) and do some NLP - sentiment analysis / n-grams (popular 3/4-word phrases for each character?) / wordclouds / top words / topic modelling?
