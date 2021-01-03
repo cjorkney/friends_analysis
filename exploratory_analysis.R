@@ -7,13 +7,17 @@ library(ggplot2)
 library(RcppRoll)
 library(purrr)
 
-# Set constants
+
+# Set constants for analysis ----------------------------------------------
+
 names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
                'Phoebe Buffay', 'Ross Geller', 'Rachel Green')
 
 movav_eps <- 30
 
-# Get data
+
+
+# Get the data ------------------------------------------------------------
 
 tuesdata <- tidytuesdayR::tt_load('2020-09-08')
 
@@ -21,7 +25,9 @@ lines <- tuesdata$friends
 info <- tuesdata$friends_info
 emotions <- tuesdata$friends_emotions
 
-# Clean up lines data
+
+
+# Prepare data for analysis, add ID fields --------------------------------
 
 lines_clean <- lines %>%
   filter(!(speaker == 'Scene Directions')) %>%
@@ -33,6 +39,10 @@ lines_clean <- lines %>%
     line_id = paste(season, episode, scene, utterance, sep = '-')
     )
 
+
+
+# Summarise to show number of lines per char. per ep. ---------------------
+
 # Summarise number of lines by character, by episode (limit to six main characters)
 lines_by_character <- lines_clean %>%
   filter(speaker %in% names_six) %>%
@@ -42,6 +52,10 @@ lines_by_character <- lines_clean %>%
   group_by(speaker) %>%
   mutate(movav = roll_meanr(lines, movav_eps)) %>%
   ungroup()
+
+
+
+# Create plots showing lines per character per episode --------------------
 
 # Take first and last episodes from lines_by_character, to use as points and labels
 
@@ -94,6 +108,10 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
     x = 'Episode number', y = 'Lines spoken per episode',
     colour = 'Character'
   )
+
+
+
+# Further analysis of lines per character, no longer by ep. ---------------
 
 # Density plot comparing characters' numbers of lines, faceted by season
 ggplot(lines_by_character, aes(x = lines, colour = speaker)) +
