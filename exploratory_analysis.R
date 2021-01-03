@@ -5,6 +5,7 @@ library(tidytext)
 library(stringr)
 library(ggplot2)
 library(RcppRoll)
+library(purrr)
 
 # Set constants
 names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
@@ -42,6 +43,16 @@ lines_by_character <- lines_clean %>%
   mutate(movav = roll_meanr(lines, movav_eps)) %>%
   ungroup()
 
+# Take first and last episodes from lines_by_character, to use as points and labels
+
+lines_first <- lines_by_character %>%
+  filter(ep_no == movav_eps)
+
+lines_last <- lines_by_character %>%
+  group_by(speaker) %>%
+  slice(max(ep_no)) %>%
+  ungroup()
+
 # Line plot showing moving average of lines per episode by character over time
 ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
   geom_line() +
@@ -52,10 +63,30 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
     colour = 'Character'
   )
 
+# Define partially-filled versions of geom_point and geom_text to reduce
+# duplicated code in labelling the end-points of the faceted plot
+
+geom_point_movav_labels <- partial(geom_point,
+                                   aes(x = ep_no, y = movav),
+                                   shape = 21,
+                                   fill = 'black')
+
+geom_text_movav_labels <- partial(geom_text,
+                                  aes(x = ep_no, y = movav,
+                                      label = sprintf('%0.2f', round(movav, 1))),
+                                  colour = 'black',)
+
 # Facet the above plot by character
 ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
   geom_line(show.legend = FALSE, size = 1) +
+  geom_point_movav_labels(data = lines_first) +
+  geom_text_movav_labels(data = lines_first,
+                         hjust = 0.8, vjust = -0.5) +
+  geom_point_movav_labels(data = lines_last) +
+  geom_text_movav_labels(data = lines_last,
+                         hjust = -0.01, vjust = -0.5) +
   geom_line(aes(y = lines), alpha = 0.4, show.legend = FALSE) +
+  coord_cartesian(xlim = c(0, 260), ylim = c(0, 80)) +
   facet_wrap(~ speaker) +
   labs(
     title = 'Number of lines per episode by main character',
