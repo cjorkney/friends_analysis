@@ -10,6 +10,8 @@ library(RcppRoll)
 names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
                'Phoebe Buffay', 'Ross Geller', 'Rachel Green')
 
+movav_eps <- 30
+
 # Get data
 
 tuesdata <- tidytuesdayR::tt_load('2020-09-08')
@@ -37,7 +39,7 @@ lines_by_character <- lines_clean %>%
   summarise(lines = n()) %>%
   ungroup() %>% 
   group_by(speaker) %>%
-  mutate(movav = roll_meanr(lines, 30)) %>%
+  mutate(movav = roll_meanr(lines, movav_eps)) %>%
   ungroup()
 
 # Line plot showing moving average of lines per episode by character over time
@@ -45,7 +47,7 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
   geom_line() +
   labs(
     title = 'Number of lines per episode by main character',
-    subtitle = '30-episode moving averages',
+    subtitle = paste0(movav_eps, '-episode moving averages'),
     x = 'Episode number', y = 'Lines spoken per episode',
     colour = 'Character'
   )
@@ -57,7 +59,7 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
   facet_wrap(~ speaker) +
   labs(
     title = 'Number of lines per episode by main character',
-    subtitle = '30-episode moving averages',
+    subtitle = paste0(movav_eps, '-episode moving averages'),
     x = 'Episode number', y = 'Lines spoken per episode',
     colour = 'Character'
   )
