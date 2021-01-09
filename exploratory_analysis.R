@@ -15,7 +15,7 @@ names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
 
 movav_eps <- 30
 
-
+top_words_n_season <- 20
 
 # Get the data ------------------------------------------------------------
 
@@ -138,6 +138,35 @@ ggplot(lines_by_character,
   )
 
 
+# Tokenise all lines to words and do some analysis on them -----------------
 
+words_full <- lines_clean %>%
+  unnest_tokens(output = word, input = text)
 
+words_neat <- words_full %>%
+  anti_join(stop_words)
 
+# Word count by season
+
+words_by_season <- words_neat %>% 
+  count(season, word)
+
+# Top 10 words by season
+
+top_words_by_season <- words_by_season %>% 
+  group_by(season) %>% 
+  top_n(top_words_n_season, n) %>%
+  ungroup()
+
+ggplot(top_words_by_season, aes(x = reorder_within(word, n, season), y = n)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~ season, scales = "free_y")
+  
+  
+  
+  
+  
+  
+  
