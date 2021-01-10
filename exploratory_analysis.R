@@ -17,6 +17,9 @@ movav_eps <- 30
 
 top_words_n_season <- 10
 top_words_n_char <- 10
+top_ngrams_n_char <- 10
+ngram_words <- 2
+ngram_min_count <- 3
 
 stop_words_plus <- stop_words %>%
   rbind(
@@ -191,7 +194,27 @@ ggplot(top_words_by_char, aes(x = reorder_within(word, n, speaker), y = n, fill 
   scale_x_reordered() +
   coord_flip() +
   facet_wrap(~ speaker, scales = "free_y")
-  
-  
-  
-  
+
+
+# TFIDF analysis of ngrams by character -----------------------------------
+
+# Unnest full lines into ngrams, count and add tfidf (main characters only)
+ngrams_tfidf <- lines_clean %>%
+  filter(speaker %in% names_six) %>% 
+  unnest_tokens(output = ngram, input = text, token = "ngrams", n = ngram_words) %>%
+  count(speaker, ngram) %>% 
+  bind_tf_idf(term = ngram, document = speaker, n = n)
+
+# Get top (by tfidf) ngrams for each character and plot - require used min. number of times
+
+top_ngrams <- ngrams_tfidf %>%
+  filter(n >= ngram_min_count) %>% 
+  group_by(speaker) %>% 
+  top_n(top_ngrams_n_char, tf_idf) %>%
+  ungroup()
+
+ggplot(top_ngrams, aes(x = reorder_within(ngram, tf_idf, speaker), y = tf_idf, fill = speaker)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~ speaker, scales = 'free_y')
