@@ -16,6 +16,7 @@ names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
 movav_eps <- 30
 
 top_words_n_season <- 10
+top_words_n_char <- 10
 
 stop_words_plus <- stop_words %>%
   rbind(
@@ -173,9 +174,23 @@ ggplot(top_words_by_season, aes(x = reorder_within(word, n, season), y = n)) +
   scale_x_reordered() +
   coord_flip() +
   facet_wrap(~ season, scales = "free_y")
+
+# Word count by character (main six)
+words_by_char <- words_neat %>%
+  filter(speaker %in% names_six) %>% 
+  count(speaker, word)
   
-  
-  
+# Top 10 words by character
+top_words_by_char <- words_by_char %>% 
+  group_by(speaker) %>% 
+  top_n(top_words_n_char, n) %>%
+  ungroup()
+
+ggplot(top_words_by_char, aes(x = reorder_within(word, n, speaker), y = n, fill = speaker)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~ speaker, scales = "free_y")
   
   
   
