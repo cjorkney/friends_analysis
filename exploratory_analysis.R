@@ -15,7 +15,19 @@ names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
 
 movav_eps <- 30
 
-top_words_n_season <- 20
+top_words_n_season <- 10
+
+stop_words_plus <- stop_words %>%
+  rbind(
+    tibble(
+      word = c('yeah', 'hey', 'um', 'uh', 'ah', 'umm',
+               "y'know", 'ya', 'ohh', 'gonna', 'wanna',
+               'ross', 'rachel', 'monica', 'chandler', 'joey',
+               'phoebe', 'huh', 'ooh', 'uhm', 'wow', 'woah', 'whoa',
+               'guys', 'god', 'fine', 'gotta', 'pheebs', 'rach'),
+      lexicon = 'custom'
+    )
+  )
 
 # Get the data ------------------------------------------------------------
 
@@ -144,15 +156,13 @@ words_full <- lines_clean %>%
   unnest_tokens(output = word, input = text)
 
 words_neat <- words_full %>%
-  anti_join(stop_words)
+  anti_join(stop_words_plus)
 
 # Word count by season
-
 words_by_season <- words_neat %>% 
   count(season, word)
 
 # Top 10 words by season
-
 top_words_by_season <- words_by_season %>% 
   group_by(season) %>% 
   top_n(top_words_n_season, n) %>%
