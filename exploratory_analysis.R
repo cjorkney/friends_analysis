@@ -20,6 +20,7 @@ top_words_n_char <- 10
 top_ngrams_n_char <- 10
 ngram_words <- 2
 ngram_min_count <- 3
+word_min_count <- 5
 
 stop_words_plus <- stop_words %>%
   rbind(
@@ -218,3 +219,24 @@ ggplot(top_ngrams, aes(x = reorder_within(ngram, tf_idf, speaker), y = tf_idf, f
   scale_x_reordered() +
   coord_flip() +
   facet_wrap(~ speaker, scales = 'free_y')
+
+
+# TFIDF analysis of words by character ------------------------------------
+
+words_tfidf <- words_full %>%
+  filter(speaker %in% names_six) %>% 
+  count(speaker, word) %>% 
+  bind_tf_idf(term = word, document = speaker, n = n)
+
+top_words_tfidf <- words_tfidf %>%
+  filter(n >= word_min_count) %>%
+  group_by(speaker) %>% 
+  top_n(top_words_n_char, tf_idf) %>%
+  ungroup()
+
+ggplot(top_words_tfidf, aes(x = reorder_within(word, tf_idf, speaker), y = tf_idf, fill = speaker)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~ speaker, scales = 'free_y')
+  
