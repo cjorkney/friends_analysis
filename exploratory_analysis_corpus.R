@@ -1,10 +1,13 @@
 library(tidytuesdayR)
 library(dplyr)
 library(tm)
+library(wordcloud)
 
 source("R/clean_corpus.R")
 
 # Set constants for analysis ----------------------------------------------
+
+set.seed(1234)
 
 names_six <- c('Monica Geller', 'Joey Tribbiani', 'Chandler Bing',
                'Phoebe Buffay', 'Ross Geller', 'Rachel Green')
@@ -15,6 +18,8 @@ custom_stopwords <- c("yeah", "hey", "um", "uh", "ah", "umm",
                       "phoebe", "huh", "ooh", "uhm", "wow", "woah", "whoa",
                       "guys", "god", "fine", "gotta", "pheebs", "rach",
                       stopwords("en"))
+
+
 
 
 # Get the data ------------------------------------------------------------
@@ -50,3 +55,14 @@ char_corpus <- lines_clean %>%
 
 corpus_clean <- clean_corpus(char_corpus,
                              stops = custom_stopwords)
+
+
+# Create document term matrix ---------------------------------------------
+
+char_dtm <- DocumentTermMatrix(corpus_clean)
+
+char_dtm_m <- as.matrix(char_dtm)
+
+word_freqs <- colSums(char_dtm_m)
+
+wordcloud(words = names(word_freqs), freq = word_freqs, max.words = 100)
