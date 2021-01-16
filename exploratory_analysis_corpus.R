@@ -48,4 +48,5 @@ char_corpus <- lines_clean %>%
   DataframeSource() %>%
   VCorpus()
 
-corpus_clean <- clean_corpus(char_corpus)
+corpus_clean <- clean_corpus(char_corpus,
+                             stops = custom_stopwords)
