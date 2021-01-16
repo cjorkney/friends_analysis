@@ -2,6 +2,7 @@ library(tidytuesdayR)
 library(dplyr)
 library(tm)
 library(wordcloud)
+library(topicmodels)
 
 source("R/clean_corpus.R")
 
@@ -68,3 +69,13 @@ char_dtm_m <- as.matrix(char_dtm)
 word_freqs <- colSums(char_dtm_m)
 
 wordcloud(words = names(word_freqs), freq = word_freqs, max.words = 100)
+
+
+# Topic modelling ---------------------------------------------------------
+
+# Can we create topic groups that correspond well to the six main characters?
+
+char_lda <- LDA(char_dtm, k = 6,
+                control = list(
+                  seed = 1234
+                ))
