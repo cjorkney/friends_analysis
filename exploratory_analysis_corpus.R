@@ -34,7 +34,7 @@ emotions <- tuesdata$friends_emotions
 # Prepare data for analysis, add ID fields --------------------------------
 
 lines_clean <- lines %>%
-  filter(!(speaker == 'Scene Directions')) %>%
+  filter(speaker %in% names_six) %>%
   mutate(
     ep_id = paste(season, episode, sep = '-'),
     ep_id = factor(ep_id, levels = unique(ep_id)),
@@ -62,6 +62,8 @@ corpus_clean <- clean_corpus(char_corpus,
 char_dtm <- DocumentTermMatrix(corpus_clean)
 
 char_dtm_m <- as.matrix(char_dtm)
+
+# Get overall term frequencies and produce wordcloud
 
 word_freqs <- colSums(char_dtm_m)
 
