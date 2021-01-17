@@ -298,7 +298,32 @@ ggplot(best_worst_eps, aes(x = ep_no, y = net_sentiment, fill = speaker)) +
   geom_text(aes(label = title, colour = speaker), hjust = -0.05, show.legend = FALSE) +
   scale_x_continuous(limits = c(0, 300)) +
   labs(title = "Best and worst episodes for each main character",
-       subtitle = "Based on highest and lowest net AFINN sentiment per episode",
+       subtitle = "Based on highest and lowest net AFINN sentiment of words spoken",
        x = "Episode number",
        y = "Net AFINN sentiment"
   )
+
+theme_sent_bar <- theme(
+  panel.background = element_blank(),
+  panel.grid.major.y = element_line(colour = "lightgrey"),
+  axis.line = element_line(colour = "black")
+)
+
+# Bar chart showing the best and worst episodes in a different way
+ggplot(best_worst_eps, aes(x = speaker, y = net_sentiment, fill = speaker)) +
+  geom_col(position = position_dodge2(), show.legend = FALSE) +
+  geom_hline(yintercept = 0) +
+  coord_flip() +
+  geom_text(data = best_eps, aes(label = title, colour = speaker), show.legend = FALSE,
+            hjust = "outward", position = position_nudge(x = -0.2, y = 1)) +
+  geom_text(data = worst_eps, aes(label = title, colour = speaker), show.legend = FALSE,
+            hjust = "outward", position = position_nudge(x = 0.25, y = -1)) +
+  scale_y_continuous(limits = c(-200, 200)) +
+  labs(title = "Best and worst episodes for each main character",
+       subtitle = "Based on highest and lowest net AFINN sentiment of words spoken",
+       x = NULL,
+       y = "Net AFINN sentiment"
+  ) +
+  theme_sent_bar
+
+
