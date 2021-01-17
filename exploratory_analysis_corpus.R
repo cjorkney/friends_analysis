@@ -3,6 +3,8 @@ library(dplyr)
 library(tm)
 library(wordcloud)
 library(topicmodels)
+library(tidytext)
+library(ggplot2)
 
 source("R/clean_corpus.R")
 
@@ -18,6 +20,10 @@ custom_stopwords <- c("yeah", "hey", "um", "uh", "ah", "umm",
                       "ross", "rachel", "monica", "chandler", "joey",
                       "phoebe", "huh", "ooh", "uhm", "wow", "woah", "whoa",
                       "guys", "god", "fine", "gotta", "pheebs", "rach",
+                      "just", "okay", "well", "like", "can", "get", "see",
+                      "get", "know", "right", "tell", "look", "got", "come",
+                      "go", "want", "really", "yes", "no", "maybe", "going",
+                      "make", "now", "back",
                       stopwords("en"))
 
 
@@ -75,7 +81,24 @@ wordcloud(words = names(word_freqs), freq = word_freqs, max.words = 100)
 
 # Can we create topic groups that correspond well to the six main characters?
 
-char_lda <- LDA(char_dtm, k = 6,
+char_lda <- LDA(char_dtm, k = 3,
                 control = list(
                   seed = 1234
                 ))
+
+topics_beta <- tidy(char_lda, matrix = "beta")
+
+topics_top_terms <- topics_beta %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup()
+
+topics_top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(x = term, y = beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~ topic, scales = "free_y")
+
+
