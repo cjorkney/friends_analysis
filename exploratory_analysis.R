@@ -239,4 +239,66 @@ ggplot(top_words_tfidf, aes(x = reorder_within(word, tf_idf, speaker), y = tf_id
   scale_x_reordered() +
   coord_flip() +
   facet_wrap(~ speaker, scales = 'free_y')
-  
+
+
+# Sentiment analysis ------------------------------------------------------
+
+# Sentiments by character
+
+sents_char_afinn <- words_by_char %>% 
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(speaker) %>% 
+  summarise(net_sentiment = sum(value)) %>%
+  ungroup()
+
+sents_char_nrc <- words_by_char %>% 
+  inner_join(get_sentiments("nrc")) %>%
+  count(speaker, sentiment)
+
+ggplot(sents_char_nrc, aes(x = speaker, y = sentiment, fill = n)) +
+  geom_tile()
+
+# Sentiments by character and episode
+
+sents_ep_afinn <- words_neat %>%
+  filter(speaker %in% names_six) %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(ep_no, season, episode, speaker) %>%
+  summarise(net_sentiment = sum(value)) %>%
+  ungroup()
+
+ggplot(sents_ep_afinn, aes(x = ep_no, y = net_sentiment, fill = speaker)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ speaker)
+
+# Best and worst episodes by character (based on net sentiment)
+
+best_eps <- sents_ep_afinn %>% 
+  group_by(speaker) %>%
+  slice_max(net_sentiment) %>%
+  slice_head() %>%
+  left_join(select(info,
+                   season, episode, title)
+            , by = c("season", "episode"))
+
+worst_eps <- sents_ep_afinn %>% 
+  group_by(speaker) %>%
+  slice_min(net_sentiment) %>%
+  slice_head() %>%
+  left_join(select(info,
+                   season, episode, title)
+            , by = c("season", "episode"))
+
+best_worst_eps <- rbind(best_eps, worst_eps)
+
+# Lollipop chart showing best and worst episodes chronologically
+ggplot(best_worst_eps, aes(x = ep_no, y = net_sentiment, fill = speaker)) +
+  geom_col(position = position_dodge2(preserve = "single")) +
+  geom_point(shape = 21, size = 3, fill = "white", aes(colour = speaker), show.legend = FALSE) +
+  geom_text(aes(label = title, colour = speaker), hjust = -0.05, show.legend = FALSE) +
+  scale_x_continuous(limits = c(0, 300)) +
+  labs(title = "Best and worst episodes for each main character",
+       subtitle = "Based on highest and lowest net AFINN sentiment per episode",
+       x = "Episode number",
+       y = "Net AFINN sentiment"
+  )
