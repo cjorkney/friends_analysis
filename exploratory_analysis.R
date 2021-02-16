@@ -179,6 +179,19 @@ ggplot(top_words_by_season, aes(x = reorder_within(word, n, season), y = n)) +
   coord_flip() +
   facet_wrap(~ season, scales = "free_y")
 
+# Top 10 words by season (TFIDF)
+top_tfidf_by_season <- words_by_season %>% 
+  bind_tf_idf(term = word, document = season, n = n) %>%
+  group_by(season) %>% 
+  top_n(top_words_n_season, tf_idf)
+
+ggplot(top_tfidf_by_season, aes(x = reorder_within(word, tf_idf, season), y = tf_idf)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~ season, scales = "free_y")
+
+
 # Word count by character (main six)
 words_by_char <- words_neat %>%
   filter(speaker %in% names_six) %>% 
