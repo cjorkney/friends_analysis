@@ -33,6 +33,19 @@ lines <- tuesdata$friends
 info <- tuesdata$friends_info
 emotions <- tuesdata$friends_emotions
 
+# Custom stopwords
+stop_words_plus <- stop_words %>%
+  rbind(
+    tibble(
+      word = c('yeah', 'hey', 'um', 'uh', 'ah', 'umm',
+               "y'know", 'ya', 'ohh', 'gonna', 'wanna',
+               'ross', 'rachel', 'monica', 'chandler', 'joey',
+               'phoebe', 'huh', 'ooh', 'uhm', 'wow', 'woah', 'whoa',
+               'guys', 'god', 'fine', 'gotta', 'pheebs', 'rach'),
+      lexicon = 'custom'
+    )
+  )
+
 # Clean up lines data
 
 lines_clean <- lines %>%
@@ -44,6 +57,14 @@ lines_clean <- lines %>%
     ep_no = cummax(as.numeric(ep_id)),
     line_id = paste(season, episode, scene, utterance, sep = '-')
     )
+
+# Theme for sentiment bar chart
+theme_sent_bar <- theme(
+  panel.background = element_blank(),
+  panel.grid.major.y = element_line(colour = "lightgrey"),
+  axis.line = element_line(colour = "black")
+)
+
 ```
 
 ## Analysis of number of lines
@@ -126,12 +147,79 @@ ggplot(lines_by_character, aes(x = ep_no, y = movav, colour = speaker)) +
 
 We can see more clearly now that the average number of lines spoken per episode was higher at the end of the show than at the start for all characters, and that Joey and Phoebe saw the most significant increases. Though all characters fluctuated over time (the time series for individual episodes have been added here with higher transparancy), these two had significantly fewer lines per episode in the first season than the other main characters. This may reflect Joey and Phoebe's early status as "light relief" characters that didn't drive the main plot points or romantic storylines - from my (possibly inaccurate) memory, those things were more the domain of Monica, Ross and Rachel in those days. I don't remember Chandler driving much of the early plot either, but I suppose his role as "the funny one" gave him a lot of lines.
 
+## Sentiment analysis: best/worst episodes for each character
+Let's tokenise the lines into words and do some sentiment analysis. I want to look at the net sentiment of words spoken by each character in each episode, and use that to decide which episodes were "best" and "worst" for each character. For each character, the episode with the highest net sentiment (using valences from the AFINN list) will be deemed their best (most positive) episode, while that with the lowest will be deemed their worst (most negative). Will the answers make sense?
 
+``` {r best-worst-prep, message = FALSE, warning = FALSE}
+
+# Tokenise lines to words, and clean
+
+words_full <- lines_clean %>%
+  unnest_tokens(output = word, input = text)
+
+words_neat <- words_full %>%
+  anti_join(stop_words_plus)
+
+# Sentiments by character and episode
+sents_ep_afinn <- words_neat %>%
+  filter(speaker %in% names_six) %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(ep_no, season, episode, speaker) %>%
+  summarise(net_sentiment = sum(value)) %>%
+  ungroup()
+
+# Best and worst episodes by character (based on net sentiment)
+
+best_eps <- sents_ep_afinn %>% 
+  group_by(speaker) %>%
+  slice_max(net_sentiment) %>%
+  slice_head() %>%
+  left_join(select(info,
+                   season, episode, title)
+            , by = c("season", "episode"))
+
+worst_eps <- sents_ep_afinn %>% 
+  group_by(speaker) %>%
+  slice_min(net_sentiment) %>%
+  slice_head() %>%
+  left_join(select(info,
+                   season, episode, title)
+            , by = c("season", "episode"))
+
+best_worst_eps <- rbind(best_eps, worst_eps)
+
+```
+
+Here are the net sentiments of those episodes on a bar plot:
+
+``` {r best-worst-plot, echo = FALSE, warning = FALSE}
+ggplot(best_worst_eps, aes(x = speaker, y = net_sentiment, fill = speaker)) +
+  geom_col(position = position_dodge2(), show.legend = FALSE) +
+  geom_hline(yintercept = 0) +
+  coord_flip() +
+  geom_text(data = best_eps, aes(label = title, colour = speaker), show.legend = FALSE,
+            hjust = "outward", position = position_nudge(x = -0.2, y = 1)) +
+  geom_text(data = worst_eps, aes(label = title, colour = speaker), show.legend = FALSE,
+            hjust = "outward", position = position_nudge(x = 0.25, y = -1)) +
+  scale_y_continuous(limits = c(-200, 200)) +
+  labs(title = "Best and worst episodes for each main character",
+       subtitle = "Based on highest and lowest net AFINN sentiment of words spoken",
+       x = NULL,
+       y = "Net AFINN sentiment"
+  ) +
+  theme_sent_bar
+```
+
+Some of these feel right intuitively: *The One with Joey's Award* is the most positive episode for Joey, which doesn't seem unreasonable; it's also the best for Rachel, which I could believe too as they attend the ceremony together and are both excited about it (I think that's right, though I haven't watched it in a long time). Conversely, *The One Where Joey Loses His Insurance* sounds like it would be a low point for Joey, even for someone who's never seen Friends, so that makes sense too.
+
+Some of the other episodes make sense too with a little memory of what happens in them, while others would need some looking into to work out.
+
+Note that I've removed stopwords in this process - I'm not sure whether that's advisable for sentiment analysis, as it's more than possible that I've decided to remove some words that would've contributed to some of the sentiment scores.
 
 ## Things to do:
 ### Lines per character represented by distributions/boxplots
 ### Can we predict ratings based on lines spoken by each character? (Linear/RF regression)
-### Break lines down into words (tidytext) and do some NLP - sentiment analysis / n-grams (popular 3/4-word phrases for each character?) / wordclouds / top words / topic modelling?
+### Break lines down into words (tidytext) and do some NLP - n-grams (popular 3/4-word phrases for each character?) / wordclouds / top words / topic modelling?
 
 
 

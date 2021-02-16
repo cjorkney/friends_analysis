@@ -25,6 +25,8 @@ lines_by_character <- lines_clean %>%
   ungroup()
 ```
 
+    ## `summarise()` has grouped output by 'ep_id', 'ep_no'. You can override using the `.groups` argument.
+
 Let’s plot a line graph of this, with one line representing each
 character’s moving average lines-per-episode over time:
 
@@ -57,6 +59,74 @@ points or romantic storylines - from my (possibly inaccurate) memory,
 those things were more the domain of Monica, Ross and Rachel in those
 days. I don’t remember Chandler driving much of the early plot either,
 but I suppose his role as “the funny one” gave him a lot of lines.
+
+## Sentiment analysis: best/worst episodes for each character
+
+Let’s tokenise the lines into words and do some sentiment analysis. I
+want to look at the net sentiment of words spoken by each character in
+each episode, and use that to decide which episodes were “best” and
+“worst” for each character. For each character, the episode with the
+highest net sentiment (using valences from the AFINN list) will be
+deemed their best (most positive) episode, while that with the lowest
+will be deemed their worst (most negative). Will the answers make sense?
+
+``` r
+# Tokenise lines to words, and clean
+
+words_full <- lines_clean %>%
+  unnest_tokens(output = word, input = text)
+
+words_neat <- words_full %>%
+  anti_join(stop_words_plus)
+
+# Sentiments by character and episode
+sents_ep_afinn <- words_neat %>%
+  filter(speaker %in% names_six) %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(ep_no, season, episode, speaker) %>%
+  summarise(net_sentiment = sum(value)) %>%
+  ungroup()
+
+# Best and worst episodes by character (based on net sentiment)
+
+best_eps <- sents_ep_afinn %>% 
+  group_by(speaker) %>%
+  slice_max(net_sentiment) %>%
+  slice_head() %>%
+  left_join(select(info,
+                   season, episode, title)
+            , by = c("season", "episode"))
+
+worst_eps <- sents_ep_afinn %>% 
+  group_by(speaker) %>%
+  slice_min(net_sentiment) %>%
+  slice_head() %>%
+  left_join(select(info,
+                   season, episode, title)
+            , by = c("season", "episode"))
+
+best_worst_eps <- rbind(best_eps, worst_eps)
+```
+
+Here are the net sentiments of those episodes on a bar plot:
+
+![](friends_analysis_report_files/figure-gfm/best-worst-plot-1.png)<!-- -->
+
+Some of these feel right intuitively: *The One with Joey’s Award* is the
+most positive episode for Joey, which doesn’t seem unreasonable; it’s
+also the best for Rachel, which I could believe too as they attend the
+ceremony together and are both excited about it (I think that’s right,
+though I haven’t watched it in a long time). Conversely, *The One Where
+Joey Loses His Insurance* sounds like it would be a low point for Joey,
+even for someone who’s never seen Friends, so that makes sense too.
+
+Some of the other episodes make sense too with a little memory of what
+happens in them, while others would need some looking into to work out.
+
+Note that I’ve removed stopwords in this process - I’m not sure whether
+that’s advisable for sentiment analysis, as it’s more than possible that
+I’ve decided to remove some words that would’ve contributed to some of
+the sentiment scored.
 
 ## Things to do:
 
